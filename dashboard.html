@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediSwarm — AI Agent Medical Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:             #ECF1F8;
+  --surface:        #FFFFFF;
+  --surface-2:      #F7F9FC;
+  --border:         #DDE4EE;
+  --border-strong:  #B8C6D9;
+  --navy:           #0B1929;
+  --blue:           #1552A0;
+  --blue-mid:       #2563EB;
+  --blue-light:     #3B82F6;
+  --blue-pale:      #EEF4FF;
+  --blue-ring:      rgba(37,99,235,.14);
+  --green:          #047857;
+  --green-mid:      #059669;
+  --green-light:    #10B981;
+  --green-pale:     #ECFDF5;
+  --red:            #B91C1C;
+  --red-pale:       #FEF2F2;
+  --amber:          #B45309;
+  --amber-pale:     #FFFBEB;
+  --text-1:         #0B1929;
+  --text-2:         #1E3A5F;
+  --text-3:         #4A6480;
+  --text-4:         #8AA0BC;
+  --f-display:      'Syne', sans-serif;
+  --f-body:         'Figtree', sans-serif;
+  --f-mono:         'DM Mono', monospace;
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px;
+  --s-sm: 0 1px 3px rgba(11,25,41,.07),0 1px 2px rgba(11,25,41,.04);
+  --s-md: 0 4px 16px rgba(11,25,41,.08),0 2px 6px rgba(11,25,41,.04);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f-body);background:var(--bg);color:var(--text-1);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ─── NAV ─────────────────────────────────────────── */
+.nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:58px;
+  background:var(--navy);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.nav-brand{display:flex;align-items:center;gap:12px;font-family:var(--f-display);font-size:18px;font-weight:700;color:#fff;letter-spacing:-.01em}
+.nav-icon{width:30px;height:30px;background:var(--blue-mid);border-radius:7px;display:grid;place-items:center;font-size:15px}
+.nav-pills{display:flex;align-items:center;gap:8px}
+.pill{display:flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:10px;color:rgba(255,255,255,.45);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);padding:3px 10px;border-radius:20px}
+.dot{width:5px;height:5px;border-radius:50%;animation:blink 2.5s ease infinite}
+.dot-g{background:#34D399;box-shadow:0 0 5px #34D399}
+.dot-b{background:#60A5FA;box-shadow:0 0 5px #60A5FA}
+.dot-a{background:#FBBF24;box-shadow:0 0 5px #FBBF24}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* EKG */
+.ekg{width:72px;height:18px}
+
+/* ─── LAYOUT ──────────────────────────────────────── */
+.wrap{max-width:1260px;margin:0 auto;padding:36px 40px 72px}
+
+/* ─── HERO ────────────────────────────────────────── */
+.hero{margin-bottom:32px;animation:riseIn .5s ease both}
+@keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--f-mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--blue-mid);background:var(--blue-pale);border:1px solid rgba(37,99,235,.2);
+  padding:3px 11px;border-radius:20px;margin-bottom:14px;
+}
+.h1{font-family:var(--f-display);font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--navy);margin-bottom:10px}
+.h1 .hl{color:var(--blue-mid)}
+.sub{font-size:15px;color:var(--text-3);max-width:480px;line-height:1.65;margin-bottom:24px}
+
+.search-bar{
+  display:flex;gap:8px;max-width:660px;
+  background:var(--surface);border:1.5px solid var(--border-strong);
+  border-radius:var(--r-lg);padding:5px 5px 5px 14px;
+  box-shadow:var(--s-md);
+  transition:border-color .2s,box-shadow .2s;
+}
+.search-bar:focus-within{border-color:var(--blue-mid);box-shadow:0 0 0 4px var(--blue-ring),var(--s-md)}
+.search-icon{color:var(--text-4);flex-shrink:0;margin-top:10px}
+.s-input{flex:1;border:none;outline:none;background:transparent;font-family:var(--f-body);font-size:14px;color:var(--text-1);padding:8px 4px}
+.s-input::placeholder{color:var(--text-4)}
+.run-btn{
+  display:flex;align-items:center;gap:7px;
+  background:var(--navy);color:#fff;border:none;border-radius:var(--r-md);
+  padding:10px 20px;font-family:var(--f-display);font-size:13px;font-weight:700;
+  cursor:pointer;letter-spacing:.01em;white-space:nowrap;
+  transition:background .2s,transform .1s;
+}
+.run-btn:hover{background:var(--blue)}
+.run-btn:active{transform:scale(.98)}
+.run-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ─── STATS ───────────────────────────────────────── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;animation:riseIn .5s .1s ease both}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--s-sm);position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:99px 99px 0 0}
+.stat-g::after{background:var(--green-light)}
+.stat-b::after{background:var(--blue-light)}
+.stat-n::after{background:var(--navy)}
+.stat-a::after{background:#FBBF24}
+.slabel{font-family:var(--f-mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-4);margin-bottom:6px}
+.sval{font-family:var(--f-display);font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.stat-g .sval{color:var(--green)}
+.stat-b .sval{color:var(--blue)}
+.stat-n .sval{color:var(--navy)}
+.stat-a .sval{color:var(--amber)}
+
+/* ─── THREE-COL ───────────────────────────────────── */
+.grid3{display:grid;grid-template-columns:260px 1fr 290px;gap:14px;margin-bottom:16px;animation:riseIn .5s .2s ease both}
+
+/* ─── CARD ────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--s-sm)}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+.ch-title{font-family:var(--f-display);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3)}
+.ch-tag{font-family:var(--f-mono);font-size:10px;color:var(--text-4);background:var(--bg);border:1px solid var(--border);padding:2px 8px;border-radius:20px}
+
+/* ─── AGENT LIST ──────────────────────────────────── */
+.agent-list{padding:10px}
+.arow{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:var(--r-md);
+  border:1px solid transparent;
+  transition:all .3s ease;opacity:.4;
+}
+.arow.active{opacity:1;border-color:rgba(37,99,235,.2);background:var(--blue-pale)}
+.arow.done{opacity:1;border-color:rgba(5,150,105,.2);background:var(--green-pale)}
+.arow.idle{opacity:.38}
+.a-ico{
+  width:30px;height:30px;border-radius:8px;background:var(--bg);
+  display:grid;place-items:center;font-size:16px;flex-shrink:0;position:relative;
+}
+.arow.active .a-ico{background:rgba(37,99,235,.1)}
+.arow.done .a-ico{background:rgba(5,150,105,.1)}
+.arow.active .a-ico::after{
+  content:'';position:absolute;inset:-3px;border-radius:11px;
+  border:2px solid transparent;border-top-color:var(--blue-mid);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.a-info{flex:1;min-width:0}
+.a-name{font-size:12px;font-weight:600;color:var(--text-1);line-height:1.2}
+.a-stat{font-family:var(--f-mono);font-size:9px;color:var(--text-3);margin-top:1px}
+.arow.active .a-stat{color:var(--blue-mid)}
+.arow.done .a-stat{color:var(--green)}
+.a-tick{
+  width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border-strong);
+  display:grid;place-items:center;font-size:9px;color:transparent;flex-shrink:0;
+}
+.arow.done .a-tick{background:var(--green-mid);border-color:var(--green-mid);color:#fff}
+
+/* ─── NETWORK SVG ─────────────────────────────────── */
+.net-wrap{padding:20px 24px;display:flex;flex-direction:column;align-items:center}
+#netSvg{width:100%;max-width:500px}
+.edge{fill:none;stroke:var(--border-strong);stroke-width:1.5;stroke-dasharray:5 5;transition:stroke .4s}
+.edge.paying{stroke:var(--green-mid);stroke-dasharray:5 3;animation:edgePulse .6s linear infinite}
+.edge.paid{stroke:var(--green-light);stroke-dasharray:none;stroke-width:1.5}
+@keyframes edgePulse{to{stroke-dashoffset:-16}}
+.node-bg{transition:all .4s ease}
+.node-emoji{pointer-events:none}
+
+/* legend */
+.net-legend{display:flex;gap:20px;font-family:var(--f-mono);font-size:9px;color:var(--text-4);padding:0 4px;margin-top:4px}
+.leg-item{display:flex;align-items:center;gap:5px}
+.leg-line{width:24px;height:1px;background:var(--green-light)}
+.leg-dash{width:24px;height:1px;background:var(--border-strong);border-top:1.5px dashed var(--border-strong)}
+
+/* ─── TX FEED ─────────────────────────────────────── */
+.tx-list{display:flex;flex-direction:column;gap:7px;max-height:390px;overflow-y:auto;padding:10px}
+.tx-list::-webkit-scrollbar{width:3px}
+.tx-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.tx-empty{text-align:center;padding:36px 16px;color:var(--text-4);font-family:var(--f-mono);font-size:11px;line-height:2}
+.txc{border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px;background:var(--surface-2);animation:slideIn .3s ease both;position:relative;overflow:hidden}
+.txc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green-mid);border-radius:0 2px 2px 0}
+@keyframes slideIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.tx-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.tx-route{font-size:12px;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:5px}
+.tx-arr{font-size:10px;color:var(--blue-mid)}
+.tx-amt{font-family:var(--f-mono);font-size:11px;font-weight:500;color:var(--green);background:var(--green-pale);padding:2px 7px;border-radius:20px}
+.tx-bot{display:flex;align-items:center;justify-content:space-between}
+.tx-id{font-family:var(--f-mono);font-size:9px;color:var(--text-4)}
+.tx-id a{color:var(--blue);text-decoration:none}
+.tx-id a:hover{text-decoration:underline}
+.tx-st{font-family:var(--f-mono);font-size:9px;display:flex;align-items:center;gap:4px}
+.tx-st-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.tx-st.ini{color:var(--amber)}
+.tx-st.ini .tx-st-dot{animation:blink 1.5s ease infinite}
+.tx-st.ok{color:var(--green)}
+
+/* ─── DIVIDER ─────────────────────────────────────── */
+.divlabel{display:flex;align-items:center;gap:10px;margin:20px 0 12px;font-family:var(--f-mono);font-size:10px;color:var(--text-4);text-transform:uppercase;letter-spacing:.08em}
+.divlabel::before,.divlabel::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ─── REPORT ──────────────────────────────────────── */
+.report{display:none;animation:riseIn .5s ease both}
+.report.vis{display:block}
+.urg-bar{display:flex;align-items:center;gap:14px;padding:18px 22px;border-radius:var(--r-lg);margin-bottom:18px;border-left:4px solid}
+.urg-imm{background:var(--red-pale);border-color:#EF4444;color:var(--red)}
+.urg-urg{background:var(--amber-pale);border-color:#FBBF24;color:var(--amber)}
+.urg-rou{background:var(--green-pale);border-color:var(--green-light);color:var(--green)}
+.urg-ico{font-size:26px}
+.urg-badge{font-family:var(--f-display);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.65;margin-bottom:3px}
+.urg-dx{font-size:15px;font-weight:600;line-height:1.3}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.rc-head{padding:12px 16px;border-bottom:1px solid var(--border);font-family:var(--f-display);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);background:var(--surface-2)}
+.rc-body{padding:14px 16px}
+.finding{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.finding:last-child{border-bottom:none}
+.f-spec{font-size:11px;font-weight:700;color:var(--blue);min-width:84px;padding-top:1px}
+.f-text{font-size:12px;color:var(--text-2);line-height:1.55}
+.rec{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-2);line-height:1.5}
+.rec:last-child{border-bottom:none}
+.rec-n{font-family:var(--f-mono);font-size:10px;color:var(--blue-mid);font-weight:500;padding-top:1px;min-width:18px}
+.follow{font-size:13px;color:var(--text-2);line-height:1.65;padding:14px 16px}
+.disclaimer{margin-top:14px;padding:12px 16px;background:var(--amber-pale);border:1px solid rgba(180,83,9,.2);border-radius:var(--r-md);font-size:11px;color:var(--amber);line-height:1.6}
+
+/* ─── LOG ─────────────────────────────────────────── */
+.log-box{background:var(--navy);border-radius:var(--r-lg);padding:14px 18px;max-height:150px;overflow-y:auto;font-family:var(--f-mono);font-size:11px;line-height:2;color:rgba(255,255,255,.35)}
+.log-box::-webkit-scrollbar{width:3px}
+.log-box::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08)}
+.l{display:block}
+.l.s{color:#34D399}
+.l.p{color:#60A5FA}
+.l.a{color:#A78BFA}
+.l.e{color:#F87171}
+
+/* ─── FOOTER ──────────────────────────────────────── */
+footer{max-width:1260px;margin:0 auto;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);font-family:var(--f-mono);font-size:10px;color:var(--text-4)}
+footer b{color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-icon">🏥</div>
+    MediSwarm
+  </div>
+  <div class="nav-pills">
+    <div class="pill"><div class="dot dot-g"></div>Arc Testnet</div>
+    <div class="pill"><div class="dot dot-b"></div>Circle Nanopayments</div>
+    <div class="pill"><div class="dot dot-a"></div>Featherless AI</div>
+    <svg class="ekg" viewBox="0 0 72 18" fill="none">
+      <polyline points="0,9 8,9 12,2 16,16 20,9 28,9 32,3 36,15 40,9 72,9"
+        stroke="rgba(52,211,153,.55)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <animate attributeName="stroke-dasharray" values="0,180;180,0;180,0" dur="2.2s" repeatCount="indefinite"/>
+      </polyline>
+    </svg>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="eyebrow">⚡ Agentic Economy · Arc Testnet Hackathon</div>
+    <h1 class="h1">AI Specialists That <span class="hl">Pay Each Other</span></h1>
+    <p class="sub">Enter symptoms. AI agents autonomously consult, route to specialists, and settle sub-cent crypto payments on-chain — fully visible in real time.</p>
+    <div class="search-bar">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M10 10L13.5 13.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <input class="s-input" id="sInput" type="text"
+        placeholder="Describe symptoms, e.g. chest pain and shortness of breath…"
+        value="I have chest pain and shortness of breath" />
+      <button class="run-btn" id="runBtn" onclick="go()">
+        Diagnose
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M1.5 6.5h10M8 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat stat-g">
+      <div class="slabel">On-chain Transactions</div>
+      <div class="sval" id="sTx">0</div>
+    </div>
+    <div class="stat stat-b">
+      <div class="slabel">USDC Settled</div>
+      <div class="sval" id="sUsdc">$0.000</div>
+    </div>
+    <div class="stat stat-n">
+      <div class="slabel">Agents Active</div>
+      <div class="sval" id="sAgents" style="font-size:22px;padding-top:4px">0 / 7</div>
+    </div>
+    <div class="stat stat-a">
+      <div class="slabel">Pipeline Status</div>
+      <div class="sval" id="sStatus" style="font-size:17px;padding-top:7px;letter-spacing:0">Idle</div>
+    </div>
+  </div>
+
+  <!-- THREE COLUMN GRID -->
+  <div class="grid3">
+
+    <!-- COL 1: Agent pipeline -->
+    <div class="card">
+      <div class="ch">
+        <span class="ch-title">Agent Pipeline</span>
+        <span class="ch-tag">7 agents</span>
+      </div>
+      <div class="agent-list">
+        <div class="arow idle" id="ar-triage">
+          <div class="a-ico" id="ai-triage">🏥</div>
+          <div class="a-info">
+            <div class="a-name">Triage Agent</div>
+            <div class="a-stat" id="as-triage">Orchestrator · Idle</div>
+          </div>
+          <div class="a-tick" id="at-triage">✓</div>
+        </div>
+        <div class="arow idle" id="ar-cardiology">
+          <div class="a-ico" id="ai-cardiology">🫀</div>
+          <div class="a-info">
+            <div class="a-name">Cardiology</div>
+            <div class="a-stat" id="as-cardiology">Specialist · Idle</div>
+          </div>
+          <div class="a-tick" id="at-cardiology">✓</div>
+        </div>
+        <div class="arow idle" id="ar-neurology">
+          <div class="a-ico" id="ai-neurology">🧠</div>
+          <div class="a-info">
+            <div class="a-name">Neurology</div>
+            <div class="a-stat" id="as-neurology">Specialist · Idle</div>
+          </div>
+          <div class="a-tick" id="at-neurology">✓</div>
+        </div>
+        <div class="arow idle" id="ar-pulmonology">
+          <div class="a-ico" id="ai-pulmonology">🫁</div>
+          <div class="a-info">
+            <div class="a-name">Pulmonology</div>
+            <div class="a-stat" id="as-pulmonology">Specialist · Idle</div>
+          </div>
+          <div class="a-tick" id="at-pulmonology">✓</div>
+        </div>
+        <div class="arow idle" id="ar-gastroenterology">
+          <div class="a-ico" id="ai-gastroenterology">🩺</div>
+          <div class="a-info">
+            <div class="a-name">Gastroenterology</div>
+            <div class="a-stat" id="as-gastroenterology">Specialist · Idle</div>
+          </div>
+          <div class="a-tick" id="at-gastroenterology">✓</div>
+        </div>
+        <div class="arow idle" id="ar-general">
+          <div class="a-ico" id="ai-general">👨‍⚕️</div>
+          <div class="a-info">
+            <div class="a-name">General Practice</div>
+            <div class="a-stat" id="as-general">Specialist · Idle</div>
+          </div>
+          <div class="a-tick" id="at-general">✓</div>
+        </div>
+        <div class="arow idle" id="ar-summary">
+          <div class="a-ico" id="ai-summary">📋</div>
+          <div class="a-info">
+            <div class="a-name">Summary Agent</div>
+            <div class="a-stat" id="as-summary">Compiler · Idle</div>
+          </div>
+          <div class="a-tick" id="at-summary">✓</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 2: Network diagram -->
+    <div class="card" style="display:flex;flex-direction:column">
+      <div class="ch">
+        <span class="ch-title">Payment Network</span>
+        <span class="ch-tag">Arc Testnet · USDC</span>
+      </div>
+      <div class="net-wrap" style="flex:1">
+        <svg id="netSvg" viewBox="0 0 500 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- ── edges: triage → specialists ── -->
+          <path id="e-tc"  class="edge" d="M250,58 C200,95 140,120 104,170"/>
+          <path id="e-tn"  class="edge" d="M250,58 C235,100 210,130 190,170"/>
+          <path id="e-tp"  class="edge" d="M250,58 C265,100 290,130 310,170"/>
+          <path id="e-tg"  class="edge" d="M250,58 C300,95 360,120 396,170"/>
+
+          <!-- ── edges: specialists → summary ── -->
+          <path id="e-cs"  class="edge" d="M104,170 C140,215 200,230 250,238"/>
+          <path id="e-ns"  class="edge" d="M190,170 C205,205 230,225 250,238"/>
+          <path id="e-ps"  class="edge" d="M310,170 C295,205 270,225 250,238"/>
+          <path id="e-gs"  class="edge" d="M396,170 C360,215 300,230 250,238"/>
+
+          <!-- ── nodes: specialists ── -->
+          <!-- Cardiology -->
+          <g id="nd-cardiology" opacity=".4">
+            <circle class="node-bg" cx="104" cy="158" r="26" fill="white" stroke="#DDE4EE" stroke-width="1.5"/>
+            <text x="104" y="153" text-anchor="middle" font-size="17" class="node-emoji">🫀</text>
+            <text x="104" y="195" text-anchor="middle" font-family="Figtree,sans-serif" font-size="10" font-weight="600" fill="#4A6480">Cardiology</text>
+          </g>
+
+          <!-- Neurology -->
+          <g id="nd-neurology" opacity=".4">
+            <circle class="node-bg" cx="190" cy="158" r="26" fill="white" stroke="#DDE4EE" stroke-width="1.5"/>
+            <text x="190" y="153" text-anchor="middle" font-size="17" class="node-emoji">🧠</text>
+            <text x="190" y="195" text-anchor="middle" font-family="Figtree,sans-serif" font-size="10" font-weight="600" fill="#4A6480">Neurology</text>
+          </g>
+
+          <!-- Pulmonology -->
+          <g id="nd-pulmonology" opacity=".4">
+            <circle class="node-bg" cx="310" cy="158" r="26" fill="white" stroke="#DDE4EE" stroke-width="1.5"/>
+            <text x="310" y="153" text-anchor="middle" font-size="17" class="node-emoji">🫁</text>
+            <text x="310" y="195" text-anchor="middle" font-family="Figtree,sans-serif" font-size="10" font-weight="600" fill="#4A6480">Pulmonology</text>
+          </g>
+
+          <!-- Gastro -->
+          <g id="nd-gastro" opacity=".4">
+            <circle class="node-bg" cx="396" cy="158" r="26" fill="white" stroke="#DDE4EE" stroke-width="1.5"/>
+            <text x="396" y="153" text-anchor="middle" font-size="17" class="node-emoji">🩺</text>
+            <text x="396" y="195" text-anchor="middle" font-family="Figtree,sans-serif" font-size="10" font-weight="600" fill="#4A6480">Gastro</text>
+          </g>
+
+          <!-- ── node: triage (top) ── -->
+          <g id="nd-triage" opacity=".4">
+            <circle class="node-bg" cx="250" cy="40" r="32" fill="white" stroke="#DDE4EE" stroke-width="1.5"/>
+            <text x="250" y="35" text-anchor="middle" font-size="20" class="node-emoji">🏥</text>
+            <text x="250" y="82" text-anchor="middle" font-family="Syne,sans-serif" font-size="11" font-weight="700" fill="#0B1929">TRIAGE</text>
+          </g>
+
+          <!-- ── node: summary (bottom) ── -->
+          <g id="nd-summary" opacity=".4">
+            <circle class="node-bg" cx="250" cy="252" r="28" fill="white" stroke="#DDE4EE" stroke-width="1.5"/>
+            <text x="250" y="247" text-anchor="middle" font-size="17" class="node-emoji">📋</text>
+            <text x="250" y="290" text-anchor="middle" font-family="Figtree,sans-serif" font-size="10" font-weight="600" fill="#4A6480">Summary</text>
+          </g>
+
+          <!-- particles container -->
+          <g id="particles"></g>
+        </svg>
+
+        <div class="net-legend">
+          <div class="leg-item"><div class="leg-dash"></div>Idle edge</div>
+          <div class="leg-item"><div class="leg-line"></div>Payment sent</div>
+          <span>Particles = live USDC</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 3: Live transactions -->
+    <div class="card">
+      <div class="ch">
+        <span class="ch-title">Live Transactions</span>
+        <span class="ch-tag" id="txBadge">0 txns</span>
+      </div>
+      <div class="tx-list" id="txFeed">
+        <div class="tx-empty">No transactions yet.<br/>Run MediSwarm to see<br/>live on-chain payments.</div>
+      </div>
+    </div>
+
+  </div><!-- /grid3 -->
+
+  <!-- REPORT -->
+  <div class="report" id="report">
+    <div class="divlabel">Medical Report</div>
+    <div class="card">
+      <div style="padding:22px">
+        <div id="urgBar"></div>
+        <div class="rg" id="rGrid"></div>
+        <div class="disclaimer" id="rDisc"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div style="margin-top:16px">
+    <div class="divlabel">System Log</div>
+    <div class="log-box" id="logBox">
+      <span class="l">MediSwarm ready — enter symptoms and click Diagnose.</span>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<footer>
+  <span>MediSwarm · <b>Agentic Economy on Arc</b> Hackathon 2026</span>
+  <span>Circle Nanopayments · Arc Testnet · Featherless AI · DeepSeek-V3-0324</span>
+</footer>
+
+<script>
+// ═══════════════ STATE ═══════════════
+let txCount = 0, usdcTotal = 0;
+
+// ═══════════════ LOG ═════════════════
+function log(msg, type='') {
+  const el = document.getElementById('logBox');
+  const s = document.createElement('span');
+  s.className = 'l ' + type;
+  const t = new Date().toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  s.textContent = `[${t}] ${msg}`;
+  el.appendChild(document.createElement('br'));
+  el.appendChild(s);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ═══════════════ AGENT STATE ══════════
+function setAgent(name, state, statusText) {
+  const row  = document.getElementById(`ar-${name}`);
+  const stat = document.getElementById(`as-${name}`);
+  const tick = document.getElementById(`at-${name}`);
+  if (!row) return;
+  row.className = `arow ${state}`;
+  if (statusText) stat.textContent = statusText;
+  if (state === 'done') tick.textContent = '✓';
+
+  // Mirror to SVG node
+  const svgId = name === 'gastroenterology' ? 'gastro' : name;
+  const nd = document.getElementById(`nd-${svgId}`);
+  if (!nd) return;
+  const circ = nd.querySelector('circle');
+  if (state === 'active') {
+    nd.setAttribute('opacity','1');
+    circ.setAttribute('stroke','#2563EB');
+    circ.setAttribute('stroke-width','2.5');
+    circ.style.filter = 'drop-shadow(0 0 10px rgba(37,99,235,.5))';
+  } else if (state === 'done') {
+    nd.setAttribute('opacity','1');
+    circ.setAttribute('stroke','#059669');
+    circ.setAttribute('stroke-width','2');
+    circ.style.filter = 'drop-shadow(0 0 6px rgba(5,150,105,.4))';
+  } else {
+    nd.setAttribute('opacity','0.4');
+    circ.setAttribute('stroke','#DDE4EE');
+    circ.setAttribute('stroke-width','1.5');
+    circ.style.filter = 'none';
+  }
+}
+
+// ═══════════════ PAYMENT PARTICLE ════
+function fireParticle(edgeId, amount) {
+  const path = document.getElementById(edgeId);
+  if (!path) return;
+  path.classList.add('paying');
+
+  const ns = 'http://www.w3.org/2000/svg';
+  const xl = 'http://www.w3.org/1999/xlink';
+  const pg = document.getElementById('particles');
+
+  const g = document.createElementNS(ns, 'g');
+
+  // circle
+  const c = document.createElementNS(ns, 'circle');
+  c.setAttribute('r','7');
+  c.setAttribute('fill','#059669');
+  c.setAttribute('stroke','white');
+  c.setAttribute('stroke-width','2');
+
+  // label
+  const txt = document.createElementNS(ns, 'text');
+  txt.setAttribute('text-anchor','middle');
+  txt.setAttribute('dy','-11');
+  txt.setAttribute('font-family','DM Mono,monospace');
+  txt.setAttribute('font-size','9');
+  txt.setAttribute('font-weight','500');
+  txt.setAttribute('fill','#047857');
+  txt.textContent = `$${amount}`;
+
+  // motion for circle
+  const m1 = document.createElementNS(ns,'animateMotion');
+  m1.setAttribute('dur','1.3s');
+  m1.setAttribute('fill','freeze');
+  m1.setAttribute('calcMode','spline');
+  m1.setAttribute('keySplines','0.4 0 0.2 1');
+  const mp1 = document.createElementNS(ns,'mpath');
+  mp1.setAttribute('href','#'+edgeId);
+  mp1.setAttributeNS(xl,'href','#'+edgeId);
+  m1.appendChild(mp1);
+
+  // motion for label
+  const m2 = document.createElementNS(ns,'animateMotion');
+  m2.setAttribute('dur','1.3s');
+  m2.setAttribute('fill','freeze');
+  m2.setAttribute('calcMode','spline');
+  m2.setAttribute('keySplines','0.4 0 0.2 1');
+  const mp2 = document.createElementNS(ns,'mpath');
+  mp2.setAttribute('href','#'+edgeId);
+  mp2.setAttributeNS(xl,'href','#'+edgeId);
+  m2.appendChild(mp2);
+
+  c.appendChild(m1);
+  txt.appendChild(m2);
+  g.appendChild(txt);
+  g.appendChild(c);
+  pg.appendChild(g);
+
+  setTimeout(() => {
+    pg.removeChild(g);
+    path.classList.remove('paying');
+    path.classList.add('paid');
+  }, 1500);
+}
+
+// ═══════════════ ADD TX CARD ══════════
+function addTx(from, to, amount, txId, url, state) {
+  const feed = document.getElementById('txFeed');
+  const empty = feed.querySelector('.tx-empty');
+  if (empty) empty.remove();
+
+  const card = document.createElement('div');
+  card.className = 'txc';
+  const short = (txId && txId !== 'unknown') ? txId.slice(0,14)+'…' : 'pending';
+  const link  = url ? `<a href="${url}" target="_blank">${short}</a>` : `<span>${short}</span>`;
+  const ok    = state === 'COMPLETE';
+  card.innerHTML = `
+    <div class="tx-top">
+      <div class="tx-route">
+        <span>${from}</span>
+        <span class="tx-arr">→</span>
+        <span>${to}</span>
+      </div>
+      <span class="tx-amt">+${amount} USDC</span>
+    </div>
+    <div class="tx-bot">
+      <div class="tx-id">${link}</div>
+      <div class="tx-st ${ok?'ok':'ini'}">
+        <div class="tx-st-dot"></div>
+        ${ok?'CONFIRMED':'INITIATED'}
+      </div>
+    </div>`;
+  feed.insertBefore(card, feed.firstChild);
+
+  txCount++;
+  usdcTotal += parseFloat(amount);
+  document.getElementById('sTx').textContent    = txCount;
+  document.getElementById('sUsdc').textContent  = '$' + usdcTotal.toFixed(4);
+  document.getElementById('txBadge').textContent = `${txCount} txn${txCount!==1?'s':''}`;
+}
+
+// ═══════════════ REPORT ══════════════
+function renderReport(rpt) {
+  const sec   = document.getElementById('report');
+  const icons = {immediate:'🚨',urgent:'⚠️',routine:'✅'};
+  document.getElementById('urgBar').innerHTML = `
+    <div class="urg-bar urg-${rpt.overallUrgency}">
+      <div class="urg-ico">${icons[rpt.overallUrgency]||'⚠️'}</div>
+      <div>
+        <div class="urg-badge">${rpt.overallUrgency} Priority</div>
+        <div class="urg-dx">${rpt.primaryDiagnosis}</div>
+      </div>
+    </div>`;
+
+  const findings = rpt.specialistFindings.map(f=>`
+    <div class="finding">
+      <div class="f-spec">${f.specialist}</div>
+      <div class="f-text">${f.summary}</div>
+    </div>`).join('');
+
+  const recs = rpt.consolidatedRecommendations.map((r,i)=>`
+    <div class="rec">
+      <div class="rec-n">0${i+1}</div>
+      <div>${r}</div>
+    </div>`).join('');
+
+  document.getElementById('rGrid').innerHTML = `
+    <div class="rc">
+      <div class="rc-head">Specialist Findings</div>
+      <div class="rc-body">${findings}</div>
+    </div>
+    <div class="rc">
+      <div class="rc-head">Recommendations</div>
+      <div class="rc-body">${recs}</div>
+    </div>
+    <div class="rc" style="grid-column:1/-1">
+      <div class="rc-head">Follow-up Plan</div>
+      <div class="follow">${rpt.followUpPlan}</div>
+    </div>`;
+
+  document.getElementById('rDisc').textContent = rpt.disclaimer;
+  sec.classList.add('vis');
+  sec.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ═══════════════ RESET ═══════════════
+function reset() {
+  txCount = 0; usdcTotal = 0;
+  ['sTx','sUsdc'].forEach(id => document.getElementById(id).textContent = id==='sTx'?'0':'$0.000');
+  document.getElementById('sAgents').textContent  = '0 / 7';
+  document.getElementById('sStatus').textContent  = 'Running';
+  document.getElementById('txBadge').textContent  = '0 txns';
+  document.getElementById('txFeed').innerHTML     = '<div class="tx-empty">Agents initializing…</div>';
+  document.getElementById('report').classList.remove('vis');
+  ['triage','cardiology','neurology','pulmonology','gastroenterology','general','summary']
+    .forEach(a => setAgent(a,'idle','Idle'));
+  document.querySelectorAll('.edge').forEach(e => {
+    e.setAttribute('stroke','#DDE4EE');
+    e.setAttribute('stroke-width','1.5');
+    e.setAttribute('stroke-dasharray','5 5');
+    e.classList.remove('paying','paid');
+  });
+  document.getElementById('particles').innerHTML = '';
+}
+
+// ═══════════════ MAIN RUN ════════════
+async function go() {
+  const btn  = document.getElementById('runBtn');
+  const symp = document.getElementById('sInput').value.trim();
+  if (!symp) return;
+
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" style="animation:spin .7s linear infinite"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.4" stroke-dasharray="20 10" fill="none"/></svg> Running…`;
+
+  reset();
+  log(`Patient: "${symp}"`);
+
+  try {
+    // Create EventSource connection - note: EventSource only supports GET
+    // So we need to use a different approach for POST with SSE
+    const response = await fetch('/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symptoms: symp })
+    });
+
+    if (!response.ok) throw new Error('no-backend');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    // Read the stream
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n\n');
+      buffer = lines.pop(); // Keep incomplete event in buffer
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        
+        const eventMatch = line.match(/^event: (.+)\ndata: (.+)$/);
+        if (!eventMatch) continue;
+
+        const [, eventType, eventData] = eventMatch;
+        const data = JSON.parse(eventData);
+
+        // Handle different event types
+        if (eventType === 'agent_update') {
+          setAgent(data.agent, data.status, data.message);
+        } 
+        else if (eventType === 'stats_update') {
+          if (data.agents) document.getElementById('sAgents').textContent = data.agents;
+          if (data.status) document.getElementById('sStatus').textContent = data.status;
+        }
+        else if (eventType === 'payment') {
+          fireParticle(data.edge, data.amount);
+          addTx(data.from, data.to, data.amount, data.txId, data.explorer, data.state);
+        }
+        else if (eventType === 'log') {
+          log(data.message, data.type);
+        }
+        else if (eventType === 'complete') {
+          renderReport(data.report);
+        }
+        else if (eventType === 'error') {
+          log(`Error: ${data.message}`, 'e');
+        }
+      }
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = `Diagnose <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 6.5h10M8 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  } catch(_) {
+    log('Running animated demo (backend not connected)');
+    await demo(symp);
+    
+    btn.disabled = false;
+    btn.innerHTML = `Diagnose <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 6.5h10M8 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+}
+
+function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+
+// ═══════════════ DEMO MODE ═══════════
+async function demo(symp) {
+  const w = ms => new Promise(r=>setTimeout(r,ms));
+
+  setAgent('triage','active','Analysing symptoms…');
+  document.getElementById('sAgents').textContent = '1 / 7';
+  log('Triage Agent: analysing…','a');
+  await w(1700);
+
+  setAgent('triage','done','Routed → Cardiology, Pulmonology');
+  log('Triage: HIGH severity → cardiology + pulmonology','s');
+
+  fireParticle('e-tc','0.005');
+  addTx('Triage','Cardiology','0.005','a1b2c3d4e5f6','https://testnet.arcscan.app','INITIATED');
+  log('💸 0.005 USDC → Cardiology (routing fee)','p');
+  await w(900);
+
+  fireParticle('e-tp','0.005');
+  addTx('Triage','Pulmonology','0.005','b2c3d4e5f6a1','https://testnet.arcscan.app','INITIATED');
+  log('💸 0.005 USDC → Pulmonology (routing fee)','p');
+  await w(600);
+
+  setAgent('cardiology','active','Consulting…');
+  document.getElementById('sAgents').textContent = '2 / 7';
+  log('Cardiology Agent: consulting…','a');
+  await w(2000);
+
+  setAgent('cardiology','done','Immediate urgency');
+  log('Cardiology: immediate — possible acute ischemia','s');
+  fireParticle('e-cs','0.003');
+  addTx('Cardiology','Summary','0.003','c3d4e5f6a1b2','https://testnet.arcscan.app','INITIATED');
+  log('💸 0.003 USDC → Summary (consultation fee)','p');
+  await w(700);
+
+  setAgent('pulmonology','active','Consulting…');
+  log('Pulmonology Agent: consulting…','a');
+  await w(1900);
+
+  setAgent('pulmonology','done','Immediate urgency');
+  log('Pulmonology: immediate — possible PE or pneumonia','s');
+  fireParticle('e-ps','0.003');
+  addTx('Pulmonology','Summary','0.003','d4e5f6a1b2c3','https://testnet.arcscan.app','INITIATED');
+  log('💸 0.003 USDC → Summary (consultation fee)','p');
+  await w(700);
+
+  setAgent('summary','active','Compiling report…');
+  document.getElementById('sAgents').textContent = '1 / 7';
+  log('Summary Agent: compiling final report…','a');
+  await w(1800);
+
+  setAgent('summary','done','Report compiled');
+  document.getElementById('sAgents').textContent = '0 / 7';
+  document.getElementById('sStatus').textContent = 'Done ✓';
+  log('✅ Complete — 4 txns · $0.016 USDC settled on Arc Testnet','s');
+
+  renderReport({
+    patientSymptoms: symp,
+    overallUrgency: 'immediate',
+    primaryDiagnosis: 'Cardiovascular or pulmonary emergency — possible myocardial infarction or pulmonary embolism',
+    specialistFindings: [
+      { specialist:'Cardiology',   summary:'Symptoms highly concerning for acute cardiac ischemia, MI, or arrhythmia. Immediate ECG and troponin levels required.' },
+      { specialist:'Pulmonology',  summary:'Differential includes pulmonary embolism, severe pneumonia, or COPD exacerbation. O₂ saturation monitoring essential.' }
+    ],
+    consolidatedRecommendations: [
+      'Call emergency services immediately — do not drive yourself.',
+      'Chew aspirin 325mg if no allergy and not contraindicated.',
+      'Avoid all physical exertion until fully evaluated.',
+      'Monitor and log oxygen saturation every 5 minutes.',
+      'Do not eat or drink in case surgical intervention is needed.'
+    ],
+    followUpPlan: 'Immediate emergency department evaluation. Expect ECG, chest X-ray, troponin and D-dimer blood panel. Likely admission for monitoring and imaging workup.',
+    disclaimer: '⚠️ Generated by AI agents for demonstration purposes only. This is NOT medical advice. In a real emergency, call your local emergency number immediately.'
+  });
+}
+
+// Auto-run on load
+window.addEventListener('load', () => setTimeout(()=>document.getElementById('runBtn').click(), 900));
+</script>
+</body>
+</html>

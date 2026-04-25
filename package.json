@@ -1,0 +1,23 @@
+{
+  "name": "mediswarm",
+  "version": "1.0.0",
+  "description": "AI Medical Triage Agent Network with Circle Nanopayments on Arc",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env --import=tsx index.ts",
+    "dev": "node --env-file=.env --import=tsx --watch index.ts",
+    "setup-wallets": "node --env-file=.env --import=tsx scripts/setup-wallets.ts",
+    "demo": "node --env-file=.env --import=tsx index.ts \"I have chest pain and shortness of breath\""
+  },
+  "dependencies": {
+    "@circle-fin/developer-controlled-wallets": "^4.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1",
+    "openai": "^4.52.0",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10"
+  }
+}
