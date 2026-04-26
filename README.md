@@ -183,8 +183,7 @@ MIT License - Built for Agentic Economy on Arc Hackathon 2026
 
 ## Contact
 
-Built solo by [Your Name]  
-[Your Twitter/Email if you want]
+Built solo by Zukanye Remington Ndiki  
 
 ---
 
